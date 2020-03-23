@@ -12,7 +12,7 @@ import java.lang.ref.WeakReference;
 public class MediaPlayer {
     private static final String TAG = "MediaPlayer";
 
-    private long mNativeContext; // accessed by native method, java层保存的nativie mediaplayer对象
+    private long mNativeContext; // accessed by native method, java层保存的nativie层 mediaplayer对象
     private long mNativeSurfaceTexture;  // accessed by native methods
 
     private OnPreparedListener mOnPreparedListener;
@@ -23,6 +23,7 @@ public class MediaPlayer {
 
     static {
         System.loadLibrary("nativeffmpeg");
+        native_init();
     }
 
     public MediaPlayer() {
@@ -103,7 +104,7 @@ public class MediaPlayer {
 
     //Jni 层回调的函数
     private static void postEventFromNative(Object mediaplayer_ref,
-                                            int what, int arg1, int arg2, Object obj)
+                                            int what, int arg1, int arg2)
     {
         final MediaPlayer mp = (MediaPlayer)((WeakReference)mediaplayer_ref).get();
         if (mp == null) {
@@ -111,7 +112,7 @@ public class MediaPlayer {
         }
 
         if (mp.mEventHandler != null) {
-            Message m = mp.mEventHandler.obtainMessage(what, arg1, arg2, obj);
+            Message m = mp.mEventHandler.obtainMessage(what, arg1, arg2);
             mp.mEventHandler.sendMessage(m);
         }
     }

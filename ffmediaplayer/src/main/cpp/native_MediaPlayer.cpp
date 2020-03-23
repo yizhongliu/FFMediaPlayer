@@ -11,16 +11,44 @@
 #define ALOGE(...)  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 #define ALOGD(...)  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 
+//指定类的路径，通过FindClass 方法来找到对应的类
+const char* className  = "pri/tool/ffmediaplayer/MediaPlayer";
+
 struct fields_t {
-    jfieldID    context;
+    jfieldID    context;     //将native层的player设置给java层
     jfieldID    surface_texture;
 
     jmethodID   post_event;
 };
+
+//FIXME：这个地方对于 context 和 surface_texture，static修饰是否不妥？
 static fields_t fields;
 
 static void pri_tool_MediaPlayer_native_init(JNIEnv *env) {
+    jclass clazz;
 
+    clazz = env->FindClass(className);
+    if (clazz == NULL) {
+        return;
+    }
+
+    fields.context = env->GetFieldID(clazz, "mNativeContext", "J");
+    if (fields.context == NULL) {
+        return;
+    }
+
+    fields.post_event = env->GetStaticMethodID(clazz, "postEventFromNative",
+                                               "(Ljava/lang/Object;III)V");
+    if (fields.post_event == NULL) {
+        return;
+    }
+
+    fields.surface_texture = env->GetFieldID(clazz, "mNativeSurfaceTexture", "J");
+    if (fields.surface_texture == NULL) {
+        return;
+    }
+
+    env->DeleteLocalRef(clazz);
 }
 
 static void pri_tool_MediaPlayer_native_setup(JNIEnv *env, jobject thiz, jobject weak_this) {
