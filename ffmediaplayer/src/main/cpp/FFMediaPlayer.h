@@ -5,7 +5,6 @@
 #ifndef FFMEDIAPLAYER_FFMEDIAPLAYER_H
 #define FFMEDIAPLAYER_FFMEDIAPLAYER_H
 
-#include <cstddef>
 #include "MediaPlayerListener.h"
 
 class FFMediaPlayer {
