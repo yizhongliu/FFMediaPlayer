@@ -12,6 +12,13 @@ import java.lang.ref.WeakReference;
 public class MediaPlayer {
     private static final String TAG = "MediaPlayer";
 
+    /*
+    *  jni层用static的变量指向这两个变量
+    *  jni在创建了native层的player后会将native player设置给mNativeContext，mNativeContext跟实例相关
+    *  Android 的MediaPlayer接口有可能同时被多个实例创建， 需要保存对应的实例，而jni层用了static，跟对象无关
+    *  后续jni 对native player进行调用时，需要获取到对应的实例对象， 通过mNativeContext获取，即获取到对应的nativie player实例
+    *  TODO：还不是很理解这两个long变量， 目前的目标只是给单一个的应用提供接口， 可能移除
+    * */
     private long mNativeContext; // accessed by native method, java层保存的nativie层 mediaplayer对象
     private long mNativeSurfaceTexture;  // accessed by native methods
 
@@ -35,6 +42,11 @@ public class MediaPlayer {
         } else {
             mEventHandler = null;
         }
+
+        /* Native setup requires a weak reference to our object.
+         * It's easier to create it here than in C++.
+         */
+        native_setup(new WeakReference<MediaPlayer>(this));
     }
 
     public void setDisplay(SurfaceHolder sh) {
@@ -117,6 +129,11 @@ public class MediaPlayer {
         }
     }
 
+    public void testCallback(boolean bNewThread) {
+        native_testCallback(bNewThread);
+    }
+
     private static native final void native_init();
     private native final void native_setup(Object mediaplayer_this);
+    private native final void native_testCallback(boolean bNewThread);
 }
