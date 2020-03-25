@@ -47,6 +47,17 @@ find_library( # Sets the name of the path variable.
 target_link_libraries( # Specifies the target library.
         nativeffmpeg
 
+        -Wl,--start-group
+        avcodec-58
+        avdevice-58
+        avfilter-7
+        avformat-58
+        postproc-55
+        swresample-3
+        swscale-5
+        avutil-56
+        -Wl,--end-group
+
         android
 
         # Links the target library to the log library

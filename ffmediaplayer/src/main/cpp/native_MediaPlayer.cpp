@@ -83,7 +83,7 @@ JNIMediaPlayerListener::~JNIMediaPlayerListener()
         javaVM->AttachCurrentThread(&env, NULL);
         ALOGE("AttachCurrentThread");
     }
-    // remove global references
+    // remove global referencesgi
     env->DeleteGlobalRef(mObject);
     env->DeleteGlobalRef(mClass);
 

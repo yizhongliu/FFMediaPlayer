@@ -4,9 +4,15 @@
 
 #include <pthread.h>
 #include "FFMediaPlayer.h"
+#include "macro.h"
+
+extern "C" {
+#include <libavcodec/avcodec.h>
+}
 
 FFMediaPlayer::FFMediaPlayer() {
-
+    //TODO:test code, remove
+    ALOGE("avcodec version: %d", avcodec_version());
 }
 
 FFMediaPlayer::~FFMediaPlayer() {
