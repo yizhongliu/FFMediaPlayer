@@ -5,9 +5,10 @@
 #include <jni.h>
 #include <assert.h>
 #include <android/log.h>
+#include <memory>
+#include <mutex>
 #include "MediaPlayerListener.h"
 #include "FFMediaPlayer.h"
-#include "CMutex.h"
 
 #define LOG_TAG "FFMediaPlayer-JNI"
 #define ALOGI(...)  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
@@ -27,7 +28,7 @@ struct fields_t {
 
 static fields_t fields;
 
-static CMutex sLock;
+static std::mutex sLock;
 
 JavaVM *javaVM = NULL;
 
@@ -121,14 +122,14 @@ void JNIMediaPlayerListener::notify(int msg, int ext1, int ext2) {
 
 static FFMediaPlayer* getMediaPlayer(JNIEnv* env, jobject thiz)
 {
-    CAutoLock l(sLock);
+    std::lock_guard<std::mutex> lock(sLock);
     FFMediaPlayer* const p = (FFMediaPlayer*)env->GetLongField(thiz, fields.context);
     return p;
 }
 
 static FFMediaPlayer* setMediaPlayer(JNIEnv* env, jobject thiz, const FFMediaPlayer *player)
 {
-    CAutoLock l(sLock);
+    std::lock_guard<std::mutex> lock(sLock);
     FFMediaPlayer  *old = (FFMediaPlayer*)env->GetLongField(thiz, fields.context);
 
     env->SetLongField(thiz, fields.context, (jlong)player);

@@ -9,7 +9,7 @@ include_directories(include)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${CMAKE_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}")
 
-file(GLOB src_files *.cpp)
+file(GLOB src_files *.cpp ffplayer/*.cpp)
 
 
 # Creates and names a library, sets it as either STATIC
