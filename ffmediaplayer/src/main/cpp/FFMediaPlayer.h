@@ -25,14 +25,14 @@ public:
     FFMediaPlayer();
     ~FFMediaPlayer();
 
-    void setListener(MediaPlayerListener *listener);
+    void setListener(const std::shared_ptr<MediaPlayerListener>& listener);
 
     //TODO: remove just for test
     void testCallback(bool bNewThread);
     void testCreatePlayer();
 
 private:
-    MediaPlayerListener  *mListener = 0;
+    std::shared_ptr<MediaPlayerListener> mListener;
     media_player_states mCurrentState;
 
     //真正的播放器功能实现类

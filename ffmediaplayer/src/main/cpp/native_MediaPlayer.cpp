@@ -16,6 +16,8 @@
 #define ALOGW(...)  __android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__)
 #define ALOGD(...)  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 
+using namespace std;
+
 //指定类的路径，通过FindClass 方法来找到对应的类
 const char* className  = "pri/tool/ffmediaplayer/MediaPlayer";
 
@@ -28,7 +30,7 @@ struct fields_t {
 
 static fields_t fields;
 
-static std::mutex sLock;
+static mutex sLock;
 
 JavaVM *javaVM = NULL;
 
@@ -73,6 +75,8 @@ JNIMediaPlayerListener::JNIMediaPlayerListener(JNIEnv* env, jobject thiz, jobjec
     // We use a weak reference so the MediaPlayer object can be garbage collected.
     // The reference is only used as a proxy for callbacks.
     mObject  = env->NewGlobalRef(weak_thiz);
+
+    ALOGE("JNIMediaPlayerListener contruct");
 }
 
 JNIMediaPlayerListener::~JNIMediaPlayerListener()
@@ -91,6 +95,8 @@ JNIMediaPlayerListener::~JNIMediaPlayerListener()
     if (status < 0) {
         javaVM->DetachCurrentThread();
     }
+
+    ALOGE("JNIMediaPlayerListener destruct");
 }
 
 void JNIMediaPlayerListener::notify(int msg, int ext1, int ext2) {
@@ -127,13 +133,10 @@ static FFMediaPlayer* getMediaPlayer(JNIEnv* env, jobject thiz)
     return p;
 }
 
-static FFMediaPlayer* setMediaPlayer(JNIEnv* env, jobject thiz, const FFMediaPlayer *player)
+static void setMediaPlayer(JNIEnv* env, jobject thiz, FFMediaPlayer* player)
 {
     std::lock_guard<std::mutex> lock(sLock);
-    FFMediaPlayer  *old = (FFMediaPlayer*)env->GetLongField(thiz, fields.context);
-
     env->SetLongField(thiz, fields.context, (jlong)player);
-    return old;
 }
 //---------------------------------------------------------------------------------------------------------------
 
@@ -168,6 +171,9 @@ static void pri_tool_MediaPlayer_native_init(JNIEnv *env) {
 
 static void pri_tool_MediaPlayer_native_setup(JNIEnv *env, jobject thiz, jobject weak_this) {
     ALOGI("native_setup");
+
+    //TODO:没有用智能指针，需要主动delete
+    //c++11 的share_ptr 和Android sp指针有一点差别，无法手动增加计数
     FFMediaPlayer *mp = new FFMediaPlayer();
     if (mp == NULL) {
         jniThrowException(env, "java/lang/RuntimeException", "Out of memory");
@@ -175,9 +181,11 @@ static void pri_tool_MediaPlayer_native_setup(JNIEnv *env, jobject thiz, jobject
     }
 
     // create new listener and give it to MediaPlayer
-    JNIMediaPlayerListener *listener = new JNIMediaPlayerListener(env, thiz, weak_this);
-    mp->setListener(listener);
+    shared_ptr<JNIMediaPlayerListener> listener(new JNIMediaPlayerListener(env, thiz, weak_this));
+    shared_ptr<MediaPlayerListener> baseListener = dynamic_pointer_cast<JNIMediaPlayerListener>(listener);
+    mp->setListener(baseListener);
 
+    //将FFMediaPlayer指针地址保存到java层对应的对象实例实例中
     // Stow our new C++ MediaPlayer in an opaque field in the Java object.
     setMediaPlayer(env, thiz, mp);
 }
@@ -185,6 +193,11 @@ static void pri_tool_MediaPlayer_native_setup(JNIEnv *env, jobject thiz, jobject
 static void pri_tool_MediaPlayer_native_testCallback(JNIEnv *env, jobject thiz, jboolean bNewThread) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     mp->testCallback(bNewThread);
+
+
+    if (bNewThread) {
+   //     mp->setListener(0);
+    }
 }
 
 

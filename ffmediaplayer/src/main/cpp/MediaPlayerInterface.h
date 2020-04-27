@@ -29,11 +29,13 @@ public:
     virtual int    reset() = 0;
     virtual int    release() = 0;
 
+    //设置回调函数
     void  setNotifyCallback(notify_callback_f notifyFunc) {
         std::lock_guard<std::mutex> lock(mNotifyLock);
         mNotify = notifyFunc;
     }
 
+    //发送回调消息
     void sendEvent(int msg, int ex1 = 0, int ext2 = 0) {
         std::lock_guard<std::mutex> lock(mNotifyLock);
         if (mNotify) {

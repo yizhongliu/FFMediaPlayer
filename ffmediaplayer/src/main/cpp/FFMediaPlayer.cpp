@@ -16,23 +16,23 @@ extern "C" {
 }
 
 FFMediaPlayer::FFMediaPlayer() {
-    //TODO:test code, remove
-    ALOGE("avcodec version: %d", avcodec_version());
-    mCurrentState = MEDIA_PLAYER_IDLE;
+    ALOGE("FFMediaPlayer contruct");
 }
 
 FFMediaPlayer::~FFMediaPlayer() {
-
+    ALOGE("FFMediaPlayer destruct");
 }
 
-void FFMediaPlayer::setListener(MediaPlayerListener *listener) {
+void FFMediaPlayer::setListener(const std::shared_ptr<MediaPlayerListener>& listener) {
     mListener = listener;
 }
 
 //TODO： remove Just for test
 void *task_test(void *args) {
-    MediaPlayerListener *listener = static_cast<MediaPlayerListener *>(args);
-    listener->notify(2,2,2);
+//    std::shared_ptr<MediaPlayerListener> listener = static_cast<std::shared_ptr<MediaPlayerListener>*>(args);
+    auto listener = static_cast<std::shared_ptr<MediaPlayerListener>*>(args);
+    (*listener)->notify(2,2,2);
+    ALOGE("listener count %ld", (*listener).use_count());
     return 0;//一定一定一定要返回0！！！
 }
 
@@ -41,7 +41,7 @@ void *task_test(void *args) {
 void FFMediaPlayer::testCallback(bool newThread) {
     if (newThread) {
         pthread_t pid_test;
-        pthread_create(&pid_test, 0, task_test, mListener);
+        pthread_create(&pid_test, 0, task_test, &mListener);
     } else {
         mListener->notify(1,1,1);
     }
@@ -51,13 +51,13 @@ void FFMediaPlayer::testCallback(bool newThread) {
 void FFMediaPlayer::testCreatePlayer() {
     FactoryInterface* factoryInterface = new FFplayerFactory();
     mPlayer = factoryInterface ->createPlayer();
-    ALOGE("mPlayeer count %d", mPlayer.use_count());
+    ALOGE("mPlayeer count %ld", mPlayer.use_count());
     std::shared_ptr<MediaPlayerInterface> temp(mPlayer);
-    ALOGE("mPlayeer count %d", mPlayer.use_count());
-    ALOGE("mPlayeer count2 %d", temp.use_count());
+    ALOGE("mPlayeer count %ld", mPlayer.use_count());
+    ALOGE("mPlayeer count2 %ld", temp.use_count());
     mPlayer.reset();
-    ALOGE("mPlayeer count %d", mPlayer.use_count());
-    ALOGE("mPlayeer count2 %d", temp.use_count());
+    ALOGE("mPlayeer count %ld", mPlayer.use_count());
+    ALOGE("mPlayeer count2 %ld", temp.use_count());
 }
 
 

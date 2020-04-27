@@ -14,6 +14,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         MediaPlayer mediaPlayer = new MediaPlayer();
-        mediaPlayer.testCallback(false);
+        mediaPlayer.testCallback(true);
     }
 }
