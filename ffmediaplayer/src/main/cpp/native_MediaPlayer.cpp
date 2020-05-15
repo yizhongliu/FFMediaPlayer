@@ -9,12 +9,14 @@
 #include <mutex>
 #include "MediaPlayerListener.h"
 #include "FFMediaPlayer.h"
+#include "macro.h"
+#include "FFLog.h"
 
-#define LOG_TAG "FFMediaPlayer-JNI"
-#define ALOGI(...)  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
-#define ALOGE(...)  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
-#define ALOGW(...)  __android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__)
-#define ALOGD(...)  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
+//#define LOG_TAG "FFMediaPlayer-JNI"
+//#define ALOGI(...)  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
+//#define ALOGE(...)  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+//#define ALOGW(...)  __android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__)
+//#define ALOGD(...)  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 
 using namespace std;
 
@@ -190,6 +192,47 @@ static void pri_tool_MediaPlayer_native_setup(JNIEnv *env, jobject thiz, jobject
     setMediaPlayer(env, thiz, mp);
 }
 
+static void pri_tool_MediaPlayer_native_setDataSource(JNIEnv *env, jobject thiz, jstring path) {
+    ALOGI("native_setDataSource");
+
+    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    if (mp == NULL) {
+        jniThrowException(env, "java/lang/IllegalStateException", NULL);
+        return;
+    }
+
+    //将fileDescriptor 转化为native层能识别的文件fd
+    if (path == NULL) {
+        jniThrowException(env, "java/lang/IllegalArgumentException", NULL);
+        return;
+    }
+
+    const char *dataSource = env->GetStringUTFChars(path, 0);
+
+    int ret = mp->setDataSource(const_cast<char *>(dataSource));
+    if (ret != STATUS_OK) {
+        jniThrowException(env, "java/io/IOException", NULL);
+    }
+
+    env->ReleaseStringUTFChars(path, dataSource);
+}
+
+static void pri_tool_MediaPlayer_native_prepareAsync(JNIEnv *env, jobject thiz) {
+    ALOGI("native_prepareAsync");
+
+    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    if (mp == NULL) {
+        jniThrowException(env, "java/lang/IllegalStateException", NULL);
+        return;
+    }
+
+    int ret = mp->prepareAsync();
+    if (ret != STATUS_OK) {
+        jniThrowException(env, "java/io/IOException", NULL);
+    }
+
+}
+
 static void pri_tool_MediaPlayer_native_testCallback(JNIEnv *env, jobject thiz, jboolean bNewThread) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     mp->testCallback(bNewThread);
@@ -204,6 +247,8 @@ static void pri_tool_MediaPlayer_native_testCallback(JNIEnv *env, jobject thiz, 
 static JNINativeMethod gMethods[] = {
         {"native_init",         "()V",                              (void *)pri_tool_MediaPlayer_native_init},
         {"native_setup",        "(Ljava/lang/Object;)V",            (void *)pri_tool_MediaPlayer_native_setup},
+        {"native_setDataSource",        "(Ljava/lang/String;)V",            (void *)pri_tool_MediaPlayer_native_setDataSource},
+        {"native_prepareAsync",        "()V",            (void *)pri_tool_MediaPlayer_native_prepareAsync},
         {"native_testCallback",        "(Z)V",            (void *)pri_tool_MediaPlayer_native_testCallback},
 };
 

@@ -21,7 +21,8 @@ class MediaPlayerInterface {
 public:
     virtual  ~MediaPlayerInterface() {}
 
-    virtual int    setDataSource(int fd, int64_t offset, int64_t length) = 0;
+    virtual int    setDataSource(char *filePath) = 0;
+    virtual int    prepare() = 0;
     virtual int    prepareAsync() = 0;
     virtual int    start() = 0;
     virtual int    stop() = 0;

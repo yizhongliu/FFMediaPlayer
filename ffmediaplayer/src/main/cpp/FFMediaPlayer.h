@@ -27,6 +27,13 @@ public:
 
     void setListener(const std::shared_ptr<MediaPlayerListener>& listener);
 
+    int setDataSource(char* filePath);
+
+    int prepareAsync();
+
+    //设置给底层播放器的回调函数
+    static void notify(int msg, int ext1, int ext2);
+
     //TODO: remove just for test
     void testCallback(bool bNewThread);
     void testCreatePlayer();

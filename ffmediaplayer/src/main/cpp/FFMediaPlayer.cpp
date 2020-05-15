@@ -10,6 +10,7 @@
 
 #include "ffplayer/FFplayerFactory.h"
 #include "ffplayer/FFplayer.h"
+#include "FFLog.h"
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -17,6 +18,7 @@ extern "C" {
 
 FFMediaPlayer::FFMediaPlayer() {
     ALOGE("FFMediaPlayer contruct");
+    mCurrentState = MEDIA_PLAYER_IDLE;
 }
 
 FFMediaPlayer::~FFMediaPlayer() {
@@ -25,6 +27,40 @@ FFMediaPlayer::~FFMediaPlayer() {
 
 void FFMediaPlayer::setListener(const std::shared_ptr<MediaPlayerListener>& listener) {
     mListener = listener;
+}
+
+void FFMediaPlayer::notify(int msg, int ext1, int ext2) {
+
+}
+
+int FFMediaPlayer::setDataSource(char *filePath) {
+    std::shared_ptr<FactoryInterface> factoryInterface(new FFplayerFactory());
+    std::shared_ptr<MediaPlayerInterface> p = factoryInterface -> createPlayer();
+
+    if (p == NULL) {
+        return CREATE_PLAYER_FAIL;
+    }
+
+    mPlayer = p;
+    mPlayer->setNotifyCallback(notify);
+
+    int ret = STATUS_OK;
+    ret = mPlayer->setDataSource(filePath);
+    if (ret == STATUS_OK) {
+        mCurrentState = MEDIA_PLAYER_INITIALIZED;
+    }
+
+    return ret;
+}
+
+int FFMediaPlayer::prepareAsync() {
+    if ( (mPlayer != 0) && (mCurrentState & (MEDIA_PLAYER_INITIALIZED | MEDIA_PLAYER_STOPPED)) ) {
+        mCurrentState = MEDIA_PLAYER_PREPARING;
+        return mPlayer->prepareAsync();
+    }
+
+    ALOGE("prepareAsync called in state %d, mPlayer(%p)", mCurrentState, mPlayer.get());
+    return INVALID_OPERATION;
 }
 
 //TODO： remove Just for test
