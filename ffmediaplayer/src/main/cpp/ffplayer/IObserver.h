@@ -14,11 +14,21 @@ public:
         mObserver = obs;
     }
 
-    void notify(void* data) {
-        update(data);
+    bool hasObserver () {
+        if (mObserver) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    virtual void update(void* data) = 0;
+    void notify(void* data) {
+        if (mObserver) {
+            mObserver->addData(data);
+        }
+    }
+
+    virtual void addData(void* data) = 0;
 
 protected:
 

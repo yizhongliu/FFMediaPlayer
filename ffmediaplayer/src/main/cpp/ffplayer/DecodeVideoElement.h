@@ -7,10 +7,10 @@
 
 #include "FFElement.h"
 
-class DecodeElement: public FFElement {
+class DecodeVideoElement: public FFElement {
 public:
-    DecodeElement(const char* filepath);
-    ~DecodeElement();
+    DecodeVideoElement(const char* filepath);
+    ~DecodeVideoElement();
 
     virtual int    open(AVFormatContext * avFormatContext, notify_callback_f notifyFunc);
     virtual int    start();
@@ -19,9 +19,8 @@ public:
     virtual int    release();
     virtual int    reset();
 
-
+    static void receiveData(void* data);
 private:
-    char* filePath = 0;
 };
 
 #endif //FFMEDIAPLAYER_DECODEELEMENT_H

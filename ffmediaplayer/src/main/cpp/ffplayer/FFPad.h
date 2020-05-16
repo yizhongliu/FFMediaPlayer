@@ -17,6 +17,8 @@ enum pad_media_type {
     PAD_AUDIO
 };
 
+typedef void (*chain_func)(void* data);
+
 
 class FFPad : public IObserver{
 public:
@@ -26,7 +28,10 @@ public:
 
     pad_media_type getPadMediaType();
 
-    virtual void update(void* data) = 0;
+    /*当buffer满了后, 函数会阻塞*/
+    virtual void addData(void* data) = 0;
+
+    virtual void* getData() = 0;
 
 protected:
     pad_type padType;

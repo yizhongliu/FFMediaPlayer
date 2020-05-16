@@ -4,12 +4,16 @@
 
 #include "DemuxVideoPad.h"
 
-void DemuxVideoPad::update(void *frame) {
+void DemuxVideoPad::addData(void *frame) {
+
+}
+
+void* DemuxVideoPad::getData() {
 
 }
 
 DemuxVideoPad::DemuxVideoPad() {
-    padType = PAD_SINK;
+    padType = PAD_SOURCE;
     mediaType = PAD_VIDEO;
 }
 

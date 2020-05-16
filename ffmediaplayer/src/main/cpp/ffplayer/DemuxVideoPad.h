@@ -8,13 +8,11 @@
 
 #include "FFPad.h"
 
-extern "C" {
-#include <libavformat/avformat.h>
-};
-
 class DemuxVideoPad:public FFPad {
+public:
     DemuxVideoPad();
-    virtual void update(void* frame);
+    virtual void addData(void* frame);
+    virtual void* getData();
 };
 
 #endif //FFMEDIAPLAYER_FRAMEPAD_H

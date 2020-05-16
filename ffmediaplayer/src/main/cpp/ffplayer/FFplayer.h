@@ -8,7 +8,9 @@
 #ifdef __cplusplus
 
 #include <cstdint>
-#include "../MediaPlayerInterface.h"
+#include "MediaPlayerInterface.h"
+#include "FFPad.h"
+#include "FFElement.h"
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -30,6 +32,8 @@ public:
 
     //设置给各个element的回调函数
     static void notify(int msg, int ext1, int ext2);
+
+    void linkPad(FFElement* element, FFPad* pad);
 
 private:
     char *filePath = 0;

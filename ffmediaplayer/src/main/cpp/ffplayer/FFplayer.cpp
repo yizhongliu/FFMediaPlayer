@@ -3,10 +3,10 @@
 //
 
 #include "FFplayer.h"
-#include "../macro.h"
-#include "../FFLog.h"
-#include "FFElement.h"
+#include "macro.h"
+#include "FFLog.h"
 #include "DemuxElement.h"
+#include "DemuxVideoPad.h"
 
 /**
  * 准备线程pid_prepare真正执行的函数
@@ -49,11 +49,17 @@ int FFplayer::prepare() {
     avformatContext = avformat_alloc_context();
     int ret = 0;
 
+    //创建demux模块
     FFElement* demuxElement = new DemuxElement(filePath);
     ret = demuxElement->open(avformatContext, notify);
     if (ret != STATUS_OK) {
         return ret;
     }
+
+    FFPad* demuxVideoPad = new DemuxVideoPad();
+    linkPad(demuxElement, demuxVideoPad);
+
+    //创建decode模块
 }
 
 int FFplayer::prepareAsync() {
@@ -80,4 +86,8 @@ int FFplayer::reset() {
 
 int FFplayer::release() {
     return 0;
+}
+
+void FFplayer::linkPad(FFElement* element, FFPad* pad) {
+    element->addPad(pad);
 }

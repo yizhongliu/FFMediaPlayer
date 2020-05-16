@@ -17,6 +17,13 @@ using namespace std;
 //需要和MediaPlayerInterface的定义保持一直,用于消息回调
 typedef void (*notify_callback_f)(int msg, int ext1, int ext2);
 
+enum element_state {
+    ELEMENT_STATE_OPEN = 0,
+    ELEMENT_STATE_PLAYING,
+    ELEMENT_STATE_PAUSE,
+    ELEMENT_STATE_STOP
+};
+
 class FFElement {
 public:
     virtual  ~FFElement() {
@@ -36,7 +43,10 @@ public:
     virtual int    stop() = 0;
     virtual int    release() = 0;
     virtual int    reset() = 0;
-    virtual void    connectPads(FFPad* sourcePad, FFPad* sinkPad) = 0;
+
+    void  connectPads(FFPad* sourcePad, FFPad* sinkPad) {
+        sourcePad->setObserver(sinkPad);
+    }
 
     void addPad(FFPad* pad) {
         pads.push_back(pad);
@@ -45,6 +55,9 @@ public:
 protected:
     notify_callback_f mNotify = 0;
     list<FFPad*> pads;
+
+    bool isPlaying = false;
+    element_state elementState;
 
 };
 
