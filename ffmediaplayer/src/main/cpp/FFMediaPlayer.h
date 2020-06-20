@@ -25,18 +25,39 @@ public:
     FFMediaPlayer();
     ~FFMediaPlayer();
 
-    void setListener(MediaPlayerListener *listener);
+    void setListener(const std::shared_ptr<MediaPlayerListener>& listener);
+
+    int setDataSource(char* filePath);
+
+    int prepareAsync();
+
+    int setSurface(ANativeWindow* window);
+
+    int start();
+
+    int stop();
+
+    int reset();
+
+    int pause();
+
+    //设置给底层播放器的回调函数
+    static void notify(int msg, int ext1, int ext2);
 
     //TODO: remove just for test
     void testCallback(bool bNewThread);
     void testCreatePlayer();
 
 private:
-    MediaPlayerListener  *mListener = 0;
+    std::shared_ptr<MediaPlayerListener> mListener;
     media_player_states mCurrentState;
 
     //真正的播放器功能实现类
     std::shared_ptr<MediaPlayerInterface> mPlayer;
+
+    static FFMediaPlayer* pThis;
+
+    RenderCallback  renderCallback;
 };
 
 #endif //FFMEDIAPLAYER_FFMEDIAPLAYER_H

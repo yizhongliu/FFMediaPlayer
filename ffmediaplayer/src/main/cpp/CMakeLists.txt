@@ -5,7 +5,7 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 
-include_directories(include)
+include_directories(include ./ ffplayer)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${CMAKE_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}")
 

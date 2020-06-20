@@ -28,4 +28,9 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
     implementation project(':ffmediaplayer')
+
+    //RXpermission 动态获取权限
+    implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    implementation 'io.reactivex.rxjava2:rxjava:2.0.5'
+    implementation 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.3@aar'
 }

@@ -5,7 +5,7 @@
 #ifndef FFMEDIAPLAYER_FFPLAYERFACTORY_H
 #define FFMEDIAPLAYER_FFPLAYERFACTORY_H
 
-#include "../FactoryInterface.h"
+#include "FactoryInterface.h"
 
 class FFplayerFactory : public FactoryInterface {
 public:
