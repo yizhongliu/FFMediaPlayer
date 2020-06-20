@@ -28,7 +28,12 @@ public:
         }
     }
 
+    IObserver* getObserver() {
+        return mObserver;
+    }
+
     virtual void addData(void* data) = 0;
+    virtual void setRecivieData(bool flag) = 0;
 
 protected:
 

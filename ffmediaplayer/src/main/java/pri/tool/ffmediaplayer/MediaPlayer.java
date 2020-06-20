@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 
 import java.io.File;
@@ -25,7 +26,7 @@ public class MediaPlayer{
     private OnPreparedListener mOnPreparedListener;
     private OnCompletionListener mOnCompletionListener;
     private OnErrorListener mOnErrorListener;
-
+    private SurfaceHolder mSurfaceHolder;
     private EventHandler mEventHandler;
 
     static {
@@ -34,6 +35,7 @@ public class MediaPlayer{
     }
 
     public MediaPlayer() {
+        Log.e(TAG, "new MediaPlayer");
         Looper looper;
         if ((looper = Looper.myLooper()) != null) {
             mEventHandler = new EventHandler(this, looper);
@@ -50,12 +52,21 @@ public class MediaPlayer{
     }
 
     public void setDisplay(SurfaceHolder sh) {
-
+        Log.e(TAG, "setDisplay");
+        mSurfaceHolder = sh;
+        Surface surface;
+        if (sh != null) {
+            surface = sh.getSurface();
+        } else {
+            surface = null;
+        }
+        native_setSurface(surface);
     }
 
     public void setDataSource(String path)
             throws IOException, IllegalArgumentException, SecurityException, IllegalStateException {
 
+        Log.e(TAG, "setDataSource:" + path);
         final File file = new File(path);
         if (file.exists()) {
             native_setDataSource(path);
@@ -65,11 +76,45 @@ public class MediaPlayer{
     }
 
     public void start() throws IllegalStateException {
+        try {
+            native_start();
+        } catch (IllegalStateException e) {
 
+        }
+    }
+
+    public void pause() throws IllegalStateException {
+        Log.e(TAG, "pause");
+        native_pause();
     }
 
     public void prepareAsync() throws IllegalStateException {
+        Log.e(TAG, "prepareAsync()");
         native_prepareAsync();
+    }
+
+    public void stop() throws IllegalStateException {
+        Log.e(TAG, "stop");
+        native_stop();
+    }
+
+    public void reset() {
+        Log.e(TAG, "reset");
+        native_reset();
+
+        // make sure none of the listeners get called anymore
+        if (mEventHandler != null) {
+            mEventHandler.removeCallbacksAndMessages(null);
+        }
+    }
+
+    public void release() {
+        Log.e(TAG, "release");
+        mOnPreparedListener = null;
+        mOnCompletionListener = null;
+        mOnErrorListener = null;
+
+        native_release();
     }
 
     public interface OnPreparedListener {
@@ -170,6 +215,16 @@ public class MediaPlayer{
                 return;
             }
             switch(msg.what) {
+                case MEDIA_PREPARED:
+                    if (mOnPreparedListener != null) {
+                        mOnPreparedListener.onPrepared(mMediaPlayer);
+                    }
+                    break;
+                case MEDIA_PLAYBACK_COMPLETE:
+                    if (mOnCompletionListener != null) {
+                        mOnCompletionListener.onCompletion(mMediaPlayer);
+                    }
+                    break;
 
                 default:
                     Log.e(TAG, "Unknown message type " + msg.what);
@@ -202,4 +257,10 @@ public class MediaPlayer{
     private native final void native_setDataSource(String filePath);
     private native final void native_testCallback(boolean bNewThread);
     private native final void native_prepareAsync();
+    private native final void native_setSurface(Object surface);
+    private native final void native_start() throws IllegalStateException;
+    private native final void native_stop() throws IllegalStateException;
+    private native final void native_reset() throws IllegalStateException;
+    private native final void native_release() throws IllegalStateException;
+    private native final void native_pause() throws IllegalStateException;
 }

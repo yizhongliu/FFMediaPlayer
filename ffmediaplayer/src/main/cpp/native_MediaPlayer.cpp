@@ -7,6 +7,8 @@
 #include <android/log.h>
 #include <memory>
 #include <mutex>
+#include <android/native_window.h>
+#include <android/native_window_jni.h>
 #include "MediaPlayerListener.h"
 #include "FFMediaPlayer.h"
 #include "macro.h"
@@ -35,6 +37,7 @@ static fields_t fields;
 static mutex sLock;
 
 JavaVM *javaVM = NULL;
+jobject jSurface;
 
 void jniThrowException(JNIEnv *env, const char *name, const char *msg)
 {
@@ -44,6 +47,7 @@ void jniThrowException(JNIEnv *env, const char *name, const char *msg)
     }
     env->DeleteLocalRef(cls);
 }
+
 
 //---------------------------------------------------------------------------------------------------------
 
@@ -226,6 +230,9 @@ static void pri_tool_MediaPlayer_native_prepareAsync(JNIEnv *env, jobject thiz) 
         return;
     }
 
+    ANativeWindow* window = (ANativeWindow*) env->GetLongField(thiz, fields.surface_texture);
+    mp->setSurface(window);
+
     int ret = mp->prepareAsync();
     if (ret != STATUS_OK) {
         jniThrowException(env, "java/io/IOException", NULL);
@@ -243,6 +250,113 @@ static void pri_tool_MediaPlayer_native_testCallback(JNIEnv *env, jobject thiz, 
     }
 }
 
+static void pri_tool_MediaPlayer_native_setSurface(JNIEnv *env, jobject thiz, jobject surface) {
+    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    if (mp == NULL) {
+        jniThrowException(env, "java/lang/IllegalStateException", NULL);
+        return;
+    }
+
+    ANativeWindow *window = (ANativeWindow *)env->GetLongField(thiz, fields.surface_texture);
+    if (window != NULL) {
+        ANativeWindow_release(window);
+    }
+
+    //创建新的窗口用于视频显示
+    window = ANativeWindow_fromSurface(env, surface);
+
+    env->SetLongField(thiz, fields.surface_texture, (jlong)window);
+    mp->setSurface(window);
+}
+
+static void pri_tool_MediaPlayer_native_start(JNIEnv *env, jobject thiz) {
+    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    if (mp == NULL) {
+        ALOGE("mp null");
+        jniThrowException(env, "java/lang/IllegalStateException", NULL);
+        return;
+    }
+
+    int ret = mp->start();
+    if (ret != STATUS_OK) {
+        ALOGE("mp start ret=%d", ret);
+        jniThrowException(env, "java/io/IOException", NULL);
+    }
+}
+
+static void pri_tool_MediaPlayer_native_stop(JNIEnv *env, jobject thiz) {
+    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    if (mp == NULL) {
+        ALOGE("mp null");
+        jniThrowException(env, "java/lang/IllegalStateException", NULL);
+        return;
+    }
+
+    int ret = mp->stop();
+    if (ret != STATUS_OK) {
+        ALOGE("mp start ret=%d", ret);
+        jniThrowException(env, "java/io/IOException", NULL);
+    }
+}
+
+static void pri_tool_MediaPlayer_native_reset(JNIEnv *env, jobject thiz) {
+    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    if (mp == NULL) {
+        ALOGE("mp null");
+        jniThrowException(env, "java/lang/IllegalStateException", NULL);
+        return;
+    }
+
+    int ret = mp->reset();
+    if (ret != STATUS_OK) {
+        ALOGE("mp start ret=%d", ret);
+        jniThrowException(env, "java/io/IOException", NULL);
+    }
+
+    ANativeWindow *window = (ANativeWindow *)env->GetLongField(thiz, fields.surface_texture);
+    if (window != NULL) {
+        ANativeWindow_release(window);
+        env->SetLongField(thiz, fields.surface_texture, NULL);
+    }
+}
+
+static void pri_tool_MediaPlayer_native_release(JNIEnv *env, jobject thiz) {
+
+    env->SetLongField(thiz, fields.surface_texture,  NULL);
+
+    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    if (mp != NULL) {
+        mp->setListener(NULL);
+        mp->reset();
+
+        ANativeWindow *window = (ANativeWindow *)env->GetLongField(thiz, fields.surface_texture);
+        if (window != NULL) {
+            ANativeWindow_release(window);
+            env->SetLongField(thiz, fields.surface_texture, NULL);
+        }
+
+        setMediaPlayer(env, thiz, 0);
+        delete mp;
+    }
+}
+
+static void pri_tool_MediaPlayer_native_pause(JNIEnv *env, jobject thiz) {
+
+    FFMediaPlayer *mp = getMediaPlayer(env, thiz);
+    if (mp == NULL) {
+        ALOGE("mp null");
+        jniThrowException(env, "java/lang/IllegalStateException", NULL);
+        return;
+    }
+
+    int ret = mp->pause();
+    if (ret != STATUS_OK) {
+        ALOGE("mp pause ret=%d", ret);
+        jniThrowException(env, "java/io/IOException", NULL);
+    }
+
+}
+
 
 static JNINativeMethod gMethods[] = {
         {"native_init",         "()V",                              (void *)pri_tool_MediaPlayer_native_init},
@@ -250,6 +364,12 @@ static JNINativeMethod gMethods[] = {
         {"native_setDataSource",        "(Ljava/lang/String;)V",            (void *)pri_tool_MediaPlayer_native_setDataSource},
         {"native_prepareAsync",        "()V",            (void *)pri_tool_MediaPlayer_native_prepareAsync},
         {"native_testCallback",        "(Z)V",            (void *)pri_tool_MediaPlayer_native_testCallback},
+        {"native_setSurface",        "(Ljava/lang/Object;)V",            (void *)pri_tool_MediaPlayer_native_setSurface},
+        {"native_start",        "()V",            (void *)pri_tool_MediaPlayer_native_start},
+        {"native_stop",        "()V",            (void *)pri_tool_MediaPlayer_native_stop},
+        {"native_reset",        "()V",            (void *)pri_tool_MediaPlayer_native_reset},
+        {"native_release",        "()V",            (void *)pri_tool_MediaPlayer_native_release},
+        {"native_pause",        "()V",            (void *)pri_tool_MediaPlayer_native_pause},
 };
 
 static int registerNativeMethods(JNIEnv* env, const char* className, JNINativeMethod* gMethods, int methodsNum) {

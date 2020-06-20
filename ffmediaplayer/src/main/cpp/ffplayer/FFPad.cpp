@@ -19,3 +19,12 @@ pad_type FFPad::getPadType() {
 pad_media_type FFPad::getPadMediaType() {
     return mediaType;
 }
+
+bool FFPad::isReceiveData() {
+    return receiveData;
+}
+
+void FFPad::setRecivieData(bool flag) {
+    receiveData = flag;
+}
+

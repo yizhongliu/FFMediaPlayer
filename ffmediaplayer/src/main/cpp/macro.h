@@ -117,6 +117,9 @@ enum media_info_type {
 
     //9xx
             MEDIA_INFO_TIMED_TEXT_ERROR = 900,
+
+            MEDIA_INFO_EOF = 1000,
+            MEDIA_INFO_ELEMENT_STATE_CHANGE = 1001,
 };
 
 
@@ -134,11 +137,21 @@ enum media_info_type {
 #define FIND_STREAM_FAIL (ERROR_CODE_PREPARE - 3)
 //找不到解码器
 #define FIND_DECODER_FAIL (ERROR_CODE_PREPARE - 4)
+
 //无法根据解码器创建上下文
-#define ALLOC_CODEC_CONTEXT_FAIL (ERROR_CODE_FFMPEG_PREPARE - 5)
+#define ALLOC_CODEC_CONTEXT_FAIL (ERROR_CODE_PREPARE - 5)
+
+//根据流信息 配置上下文参数失败
+#define CODEC_CONTEXT_PARAMETERS_FAIL (ERROR_CODE_PREPARE - 6)
+
+//打开解码器失败
+#define OPEN_DECODER_FAIL (ERROR_CODE_PREPARE - 7)
 
 #define MEDIA_ALREAD_START (ERROR_CODE_PLAY -1)
 //读取媒体数据包失败
 #define READ_PACKETS_FAIL (ERROR_CODE_PLAY - 2)
+
+//播放过程中包处理失败
+#define PASER_PACKETS_FAIL (ERROR_CODE_PLAY - 3)
 
 #endif //FFMEDIAPLAYER_MACRO_H

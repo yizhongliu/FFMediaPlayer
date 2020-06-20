@@ -18,8 +18,9 @@ class DecodeVideoSinkPad: public FFPad {
 public:
     DecodeVideoSinkPad();
     virtual ~DecodeVideoSinkPad();
-    virtual void updata(void* frame);
+    virtual void addData(void* frame);
     virtual void* getData();
+    virtual bool isDataBufferEmpty();
 
 private:
     SafeQueue<AVPacket *> packets;

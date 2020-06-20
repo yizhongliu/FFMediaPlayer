@@ -31,6 +31,16 @@ public:
 
     int prepareAsync();
 
+    int setSurface(ANativeWindow* window);
+
+    int start();
+
+    int stop();
+
+    int reset();
+
+    int pause();
+
     //设置给底层播放器的回调函数
     static void notify(int msg, int ext1, int ext2);
 
@@ -44,6 +54,10 @@ private:
 
     //真正的播放器功能实现类
     std::shared_ptr<MediaPlayerInterface> mPlayer;
+
+    static FFMediaPlayer* pThis;
+
+    RenderCallback  renderCallback;
 };
 
 #endif //FFMEDIAPLAYER_FFMEDIAPLAYER_H

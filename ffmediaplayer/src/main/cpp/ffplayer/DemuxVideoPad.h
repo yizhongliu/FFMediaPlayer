@@ -11,8 +11,10 @@
 class DemuxVideoPad:public FFPad {
 public:
     DemuxVideoPad();
+    virtual ~DemuxVideoPad();
     virtual void addData(void* frame);
     virtual void* getData();
+    virtual bool isDataBufferEmpty();
 };
 
 #endif //FFMEDIAPLAYER_FRAMEPAD_H

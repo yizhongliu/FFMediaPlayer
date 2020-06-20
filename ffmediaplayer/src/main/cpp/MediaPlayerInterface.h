@@ -6,6 +6,8 @@
 #define FFMEDIAPLAYER_MEDIAPLAYERINTERFACE_H
 
 #include <mutex>
+#include <jni.h>
+#include <android/native_window.h>
 
 #ifdef __cplusplus
 
@@ -15,7 +17,7 @@ enum player_type {
 
 // callback mechanism for passing messages to MediaPlayer object
 typedef void (*notify_callback_f)(int msg, int ext1, int ext2);
-
+typedef void (*RenderCallback)(uint8_t *, int, int, int);
 
 class MediaPlayerInterface {
 public:
@@ -29,6 +31,7 @@ public:
     virtual int    pause() = 0;
     virtual int    reset() = 0;
     virtual int    release() = 0;
+    virtual int    setSurface(ANativeWindow* window) = 0;
 
     //设置回调函数
     void  setNotifyCallback(notify_callback_f notifyFunc) {

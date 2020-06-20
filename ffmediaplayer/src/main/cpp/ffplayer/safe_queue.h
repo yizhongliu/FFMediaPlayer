@@ -8,6 +8,7 @@
 #include <queue>
 #include <pthread.h>
 #include "macro.h"
+#include "FFLog.h"
 
 using namespace std;
 
@@ -116,15 +117,15 @@ public:
             //取出队首元素
             T value = q.front();
             if (releaseCallback) {
-                LOGE("release i = %d", i);
+            //    ALOGE("release i = %d", i);
                 releaseCallback(&value);
             } else {
-                LOGE("!!!!!!!!!!!!!!!!!release callback is null!!!!!!!!!");
+                ALOGE("!!!!!!!!!!!!!!!!!release callback is null!!!!!!!!!");
             }
             q.pop();
         }
 
-        LOGE("leave %s", __FUNCTION__);
+        ALOGE("leave %s", __FUNCTION__);
 
         //解锁
         pthread_mutex_unlock(&mutex);
