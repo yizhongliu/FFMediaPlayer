@@ -316,13 +316,13 @@ static void pri_tool_MediaPlayer_native_reset(JNIEnv *env, jobject thiz) {
     ANativeWindow *window = (ANativeWindow *)env->GetLongField(thiz, fields.surface_texture);
     if (window != NULL) {
         ANativeWindow_release(window);
-        env->SetLongField(thiz, fields.surface_texture, NULL);
+        env->SetLongField(thiz, fields.surface_texture, 0);
     }
 }
 
 static void pri_tool_MediaPlayer_native_release(JNIEnv *env, jobject thiz) {
 
-    env->SetLongField(thiz, fields.surface_texture,  NULL);
+    env->SetLongField(thiz, fields.surface_texture,  0);
 
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp != NULL) {
@@ -332,7 +332,7 @@ static void pri_tool_MediaPlayer_native_release(JNIEnv *env, jobject thiz) {
         ANativeWindow *window = (ANativeWindow *)env->GetLongField(thiz, fields.surface_texture);
         if (window != NULL) {
             ANativeWindow_release(window);
-            env->SetLongField(thiz, fields.surface_texture, NULL);
+            env->SetLongField(thiz, fields.surface_texture, 0);
         }
 
         setMediaPlayer(env, thiz, 0);
@@ -345,7 +345,7 @@ static void pri_tool_MediaPlayer_native_pause(JNIEnv *env, jobject thiz) {
     FFMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == NULL) {
         ALOGE("mp null");
-        jniThrowException(env, "java/lang/IllegalStateException", NULL);
+        jniThrowException(env, "java/lang/IllegalStateException", 0);
         return;
     }
 

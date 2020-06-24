@@ -12,6 +12,11 @@
 #include "DecodeVideoSinkPad.h"
 #include "DecodeVideoSourcePad.h"
 #include "RenderVideoPad.h"
+#include "DecodeAudioSinkPad.h"
+#include "SourcePad.h"
+#include "RenderAudioElement.h"
+#include "RenderAudioPad.h"
+#include "DecodeAudioElement.h"
 
 /**
  * 准备线程pid_prepare真正执行的函数
@@ -90,11 +95,14 @@ int FFplayer::prepare() {
     FFPad* demuxVideoPad = new DemuxVideoPad();
     linkPad(demuxElement, demuxVideoPad);
 
-    //创建decode模块
+    FFPad* demuxAudioPad = new SourcePad(PAD_SOURCE, PAD_AUDIO);
+    linkPad(demuxElement, demuxAudioPad);
+
+    //创建视频 decode模块
     FFElement* decodeVideoElement = new DecodeVideoElement();
     ret = decodeVideoElement->open(avContext, notify);
     if (ret != STATUS_OK) {
-        return ret;
+        ALOGE("open decode video element fail");
     }
 
     FFPad* videoDecodeSinkPad = new DecodeVideoSinkPad();
@@ -102,10 +110,25 @@ int FFplayer::prepare() {
     FFPad* videoDecodeSourcePad = new DecodeVideoSourcePad();
     linkPad(decodeVideoElement, videoDecodeSourcePad);
 
-    //将demux的 输出的pad 链接到 decode输入pad
-    connectPad(demuxVideoPad, videoDecodeSinkPad);
 
-    //创建 render模块
+    connectPad(demuxVideoPad, videoDecodeSinkPad);  //将demux的 输出的pad 链接到 decode输入pad
+
+    //创建音频 decode模块
+    FFElement* decodeAudioElement = new DecodeAudioElement();
+    ret = decodeAudioElement->open(avContext, notify);
+    if (ret != STATUS_OK) {
+        ALOGE("open decode audio element fail");
+    }
+
+    FFPad* audioDecodeSinkPad = new DecodeAudioSinkPad();
+    linkPad(decodeAudioElement, audioDecodeSinkPad);
+    FFPad* audioDecodeSourcePad = new SourcePad(PAD_SOURCE, PAD_AUDIO);
+    linkPad(decodeAudioElement, audioDecodeSourcePad);
+
+    connectPad(demuxAudioPad, audioDecodeSinkPad); //将demux的 输出的pad 链接到 decode输入pad
+
+
+    //创建video render模块
     FFElement* renderVideoElement = new RenderVideoElement();
     ret = renderVideoElement->open(avContext, notify);
     if (ret != STATUS_OK) {
@@ -116,12 +139,25 @@ int FFplayer::prepare() {
     FFPad* videoRenderPad = new RenderVideoPad();
     linkPad(renderVideoElement, videoRenderPad);
 
-    //将decode 和 render建立连接
-    connectPad(videoDecodeSourcePad, videoRenderPad);
+
+    connectPad(videoDecodeSourcePad, videoRenderPad);  //将decode 和 render建立连接
+
+    //创建audio render模块
+    FFElement* renderAudioElement = new RenderAudioElement();
+    ret = renderAudioElement->open(avContext, notify);
+    if (ret != STATUS_OK) {
+        return ret;
+    }
+    FFPad* audioRenderPad = new RenderAudioPad();
+    linkPad(renderAudioElement, audioRenderPad);
+
+    connectPad(audioDecodeSourcePad, audioRenderPad);
 
     elements.push_back(demuxElement);
     elements.push_back(decodeVideoElement);
+    elements.push_back(decodeAudioElement);
     elements.push_back(renderVideoElement);
+    elements.push_back(renderAudioElement);
 
     elementState = ELEMENT_STATE_OPEN;
 

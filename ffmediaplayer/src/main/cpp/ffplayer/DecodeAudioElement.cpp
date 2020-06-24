@@ -1,47 +1,42 @@
 //
-// Created by llm on 20-5-16.
+// Created by llm on 20-6-20.
 //
 
+#include <FFLog.h>
+#include <macro.h>
 #include <pthread.h>
+#include "DecodeAudioElement.h"
 
-#include "DecodeVideoElement.h"
-#include "FFLog.h"
-#include "macro.h"
-
-extern "C" {
-#include <libavutil/time.h>
-}
-
-void *video_decode_task_start(void *args) {
+void *audio_decode_task_start(void *args) {
     ALOGE("enter: %s", __PRETTY_FUNCTION__);
-    DecodeVideoElement *element = static_cast<DecodeVideoElement *>(args);
+    DecodeAudioElement *element = static_cast<DecodeAudioElement *>(args);
     element ->_start();
     return 0;//一定一定一定要返回0！！！
 }
 
-DecodeVideoElement::DecodeVideoElement() {
-    ALOGE("DecodeVideoElement::DecodeVideoElement()");
-    elementType = VIDEO_DECODER;
+DecodeAudioElement::DecodeAudioElement() {
+    ALOGE("DecodeAudioElement::DecodeAudioElement()");
+    elementType = AUDIO_DECODER;
 }
 
-DecodeVideoElement::~DecodeVideoElement() {
-    ALOGE("DecodeVideoElement::~DecodeVideoElement() ");
+DecodeAudioElement::~DecodeAudioElement() {
+    ALOGE("DecodeAudioElement::~DecodeAudioElement() ");
 
     if (mNotify != 0) {
         mNotify = 0;
     }
 }
 
-int DecodeVideoElement::open(PLAYER_PARAMETERS &avContext, notify_callback_f notifyFunc) {
+int DecodeAudioElement::open(PLAYER_PARAMETERS &avContext, notify_callback_f notifyFunc) {
     mNotify = notifyFunc;
 
-    if (avContext.videoIndex == -1) {
+    if (avContext.audioIndex == -1) {
         ALOGE("不包含视频流");
         return INVALID_OPERATION;
     }
 
     //获取媒体流（
-    AVStream *stream = avContext.formatContext->streams[avContext.videoIndex];
+    AVStream *stream = avContext.formatContext->streams[avContext.audioIndex];
     //获取编解码这段流的参数
     AVCodecParameters *codecParameters = stream->codecpar;
     ALOGE("解码 id ：%d, type: %d", codecParameters->codec_id, codecParameters->codec_type);
@@ -49,7 +44,7 @@ int DecodeVideoElement::open(PLAYER_PARAMETERS &avContext, notify_callback_f not
     //通过参数中的id（编解码的方式），来查找当前流的解码器
     AVCodec *codec = avcodec_find_decoder(codecParameters->codec_id);
     if (!codec) {
-        ALOGE("can't find video decoder");
+        ALOGE("can't find audio decoder");
         mNotify(MEDIA_ERROR, MEDIA_ERROR_UNKNOWN, FIND_DECODER_FAIL);
         return FIND_DECODER_FAIL;
     }
@@ -77,15 +72,15 @@ int DecodeVideoElement::open(PLAYER_PARAMETERS &avContext, notify_callback_f not
         return OPEN_DECODER_FAIL;
     }
 
-    avContext.videoCodecContext = codecContext;
+    avContext.audioCodecContext = codecContext;
 
     elementState = ELEMENT_STATE_OPEN;
 
     return STATUS_OK;
 }
 
-int DecodeVideoElement::start() {
-    ALOGE("enter: DecodeVideoElement::start() state %d", elementState);
+int DecodeAudioElement::start() {
+    ALOGE("enter: DecodeAudioElement::start() state %d", elementState);
 
     if (sinkPad == 0 || sourcePad == 0) {
         ALOGE("sinkPad is 0");
@@ -99,15 +94,15 @@ int DecodeVideoElement::start() {
     isPlaying = true;
 
     if (elementState != ELEMENT_STATE_PAUSE) {
-        pthread_create(&pid_start, 0, video_decode_task_start, this);
+        pthread_create(&pid_start, 0, audio_decode_task_start, this);
     }
     elementState = ELEMENT_STATE_PLAYING;
 
     return STATUS_OK;
 }
 
-int DecodeVideoElement::pause() {
-    ALOGE("enter DecodeVideoElement::pause() state %d", elementState);
+int DecodeAudioElement::pause() {
+    ALOGE("enter DecodeAudioElement::pause() state %d", elementState);
     if (elementState == ELEMENT_STATE_PAUSE) {
         return STATUS_OK;
     } else if (elementState == ELEMENT_STATE_PLAYING) {
@@ -118,7 +113,7 @@ int DecodeVideoElement::pause() {
     }
 }
 
-int DecodeVideoElement::stop() {
+int DecodeAudioElement::stop() {
     ALOGE("enter DecodeVideoElement::stop()");
     if (isPlaying) {
         isPlaying = false;
@@ -154,7 +149,7 @@ int DecodeVideoElement::stop() {
     return 0;
 }
 
-int DecodeVideoElement::release() {
+int DecodeAudioElement::release() {
     if (sinkPad != 0) {
         delete sinkPad;
         sinkPad = 0;
@@ -167,16 +162,12 @@ int DecodeVideoElement::release() {
     return 0;
 }
 
-int DecodeVideoElement::reset() {
+int DecodeAudioElement::reset() {
     return stop();
 }
 
-void DecodeVideoElement::connectPads(FFPad *sourcePad, FFPad *sinkPad) {
-    sourcePad->setObserver(sinkPad);
-}
-
-void DecodeVideoElement::addPad(FFPad* pad) {
- //   pads.push_back(pad);
+void DecodeAudioElement::addPad(FFPad* pad) {
+    //   pads.push_back(pad);
 
     if (pad->getPadType() == PAD_SINK) {
         if (sinkPad != 0) {
@@ -191,7 +182,7 @@ void DecodeVideoElement::addPad(FFPad* pad) {
     }
 }
 
-void DecodeVideoElement::_start() {
+void DecodeAudioElement::_start() {
     ALOGE("enter: %s", __FUNCTION__);
 
     while (isPlaying) {
@@ -203,7 +194,6 @@ void DecodeVideoElement::_start() {
 
         AVPacket* packet = (AVPacket *)sinkPad -> getData();
         if (packet == 0) {
-     //       ALOGE("DecodeVideoElement::_start packet is 0");
             av_usleep(10 * 1000);
             continue;
         }
@@ -242,6 +232,7 @@ void DecodeVideoElement::_start() {
         }
 
         if (sourcePad != 0 && sourcePad->hasObserver()) {
+            //     ALOGE("DecodeVideoElement::_start() notify frame");
             sourcePad->notify(frame);
         } else {
             av_frame_free(&frame);
@@ -250,10 +241,10 @@ void DecodeVideoElement::_start() {
     }
 }
 
-int DecodeVideoElement::setSurface(ANativeWindow *window) {
+int DecodeAudioElement::setSurface(ANativeWindow *window) {
     return INVALID_OPERATION;
 }
 
-bool DecodeVideoElement::isDataBufferEmpty() {
+bool DecodeAudioElement::isDataBufferEmpty() {
     return sinkPad->isDataBufferEmpty();
 }
