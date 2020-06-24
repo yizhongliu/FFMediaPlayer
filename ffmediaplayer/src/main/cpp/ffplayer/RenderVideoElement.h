@@ -29,7 +29,7 @@ public:
     virtual int    stop();
     virtual int    release();
     virtual int    reset();
-    virtual bool isDataBufferEmpty();
+    virtual bool   isDataBufferEmpty();
 
     void addPad(FFPad* pad);
     void _start();
@@ -43,7 +43,6 @@ private:
 
     pthread_t pid_start;
 
-
     pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     ANativeWindow *window = 0;
 
@@ -52,8 +51,6 @@ private:
     SwsContext *sws_ctx = 0;
     int width;
     int height;
-
-    RenderCallback renderCallback;
 };
 
 #endif //FFMEDIAPLAYER_RENDERVIDEOELEMENT_H

@@ -154,7 +154,7 @@ private:
     queue<T> q;
     pthread_mutex_t mutex;
     pthread_cond_t cond;
-    int work;//标记队列是否工作
+    int work = 1;//标记队列是否工作
     ReleaseCallback releaseCallback;
     SyncHandle syncHandle;
 };

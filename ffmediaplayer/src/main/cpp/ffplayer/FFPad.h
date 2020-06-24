@@ -29,13 +29,13 @@ typedef void (*chain_func)(void* data);
 
 class FFPad : public IObserver{
 public:
+    FFPad();
+    FFPad(pad_type padType, pad_media_type mediaType);
     virtual ~FFPad();
 
     pad_type getPadType();
 
     pad_media_type getPadMediaType();
-
-
 
 
     /*当buffer满了后, 函数会阻塞*/

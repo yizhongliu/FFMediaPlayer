@@ -1,16 +1,15 @@
 //
-// Created by llm on 20-5-16.
+// Created by llm on 20-6-20.
 //
 
-
-
-#include "DecodeVideoSinkPad.h"
+#include "DecodeAudioSinkPad.h"
+#include "FFLog.h"
 
 extern "C" {
 #include <libavutil/time.h>
 }
 
-DecodeVideoSinkPad::DecodeVideoSinkPad() {
+DecodeAudioSinkPad::DecodeAudioSinkPad() {
     padType = PAD_SINK;
     mediaType = PAD_VIDEO;
 
@@ -18,14 +17,14 @@ DecodeVideoSinkPad::DecodeVideoSinkPad() {
     packets.setWork(1);
 }
 
-DecodeVideoSinkPad::~DecodeVideoSinkPad() {
-    ALOGE("DecodeVideoSinkPad::~DecodeVideoSinkPad()");
+DecodeAudioSinkPad::~DecodeAudioSinkPad() {
+    ALOGE("DecodeAudioSinkPad::~DecodeAudioSinkPad()");
     packets.clear();
 }
 
 
-void DecodeVideoSinkPad::addData(void *frame) {
-  //  ALOGE("DecodeVideoSinkPad::addData");
+void DecodeAudioSinkPad::addData(void *frame) {
+ //     ALOGE("DecodeAudioSinkPad::addData");
     while (packets.size() > 100 && isReceiveData()) {
         av_usleep(10 * 1000);
         continue;
@@ -34,7 +33,8 @@ void DecodeVideoSinkPad::addData(void *frame) {
     packets.push((AVPacket *) frame);
 }
 
-void *DecodeVideoSinkPad::getData() {
+void *DecodeAudioSinkPad::getData() {
+   // ALOGE("DecodeAudioSinkPad::getData");
     AVPacket *packet = 0;
     if (packets.size() > 0) {
         packets.pop(packet);
@@ -42,10 +42,11 @@ void *DecodeVideoSinkPad::getData() {
     return packet;
 }
 
-bool DecodeVideoSinkPad::isDataBufferEmpty() {
+bool DecodeAudioSinkPad::isDataBufferEmpty() {
     if (packets.empty()) {
         return true;
     } else {
         return false;
     }
 }
+

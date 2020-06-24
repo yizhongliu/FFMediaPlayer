@@ -1,47 +1,46 @@
 //
-// Created by llm on 20-6-11.
+// Created by llm on 20-6-23.
 //
 
-#include "RenderVideoPad.h"
+#include "RenderAudioPad.h"
+#include "FFLog.h"
 
-RenderVideoPad::RenderVideoPad() {
+RenderAudioPad::RenderAudioPad() {
     padType = PAD_SINK;
-    mediaType = PAD_VIDEO;
+    mediaType = PAD_AUDIO;
 
     frames.setReleaseCallback(releaseAVFrame);
     frames.setWork(1);
 }
 
-void RenderVideoPad::addData(void *frame) {
- //   ALOGE("RenderVideoPad::addData ");
+void RenderAudioPad::addData(void *frame) {
+    ALOGE("RenderAudioPad::addData");
     while (frames.size() > 100) {
         av_usleep(10 * 1000);
         continue;
     }
 
- //   ALOGE("RenderVideoPad::addData 2");
     frames.push((AVFrame *) frame);
 }
 
-RenderVideoPad::~RenderVideoPad() {
+RenderAudioPad::~RenderAudioPad() {
     ALOGE("RenderVideoPad::~RenderVideoPad()");
     frames.clear();
 }
 
-void *RenderVideoPad::getData() {
+void *RenderAudioPad::getData() {
+    ALOGE("RenderAudioPad::getData");
     AVFrame *frame = 0;
-  //  ALOGE("RenderVideoPad::getData() frames.size:%d",frames.size()  );
     if (frames.size() > 0) {
         frames.pop(frame);
     }
     return frame;
 }
 
-bool RenderVideoPad::isDataBufferEmpty() {
+bool RenderAudioPad::isDataBufferEmpty() {
     if (frames.empty()) {
         return true;
     } else {
         return false;
     }
 }
-

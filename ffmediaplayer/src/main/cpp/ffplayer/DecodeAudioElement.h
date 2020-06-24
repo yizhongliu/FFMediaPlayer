@@ -1,17 +1,18 @@
 //
-// Created by llm on 20-5-14.
+// Created by llm on 20-6-20.
 //
 
-#ifndef FFMEDIAPLAYER_DECODEELEMENT_H
-#define FFMEDIAPLAYER_DECODEELEMENT_H
+#ifndef FFMEDIAPLAYER_DECODEAUDIOELEMENT_H
+#define FFMEDIAPLAYER_DECODEAUDIOELEMENT_H
+
 
 #include <jni.h>
 #include "FFElement.h"
 
-class DecodeVideoElement: public FFElement {
+class DecodeAudioElement: public FFElement {
 public:
-    DecodeVideoElement();
-    ~DecodeVideoElement();
+    DecodeAudioElement();
+    ~DecodeAudioElement();
 
     virtual int    open(PLAYER_PARAMETERS &avContext, notify_callback_f notifyFunc);
     virtual int    start();
@@ -22,12 +23,10 @@ public:
     virtual int    setSurface(ANativeWindow* window);
     virtual bool   isDataBufferEmpty();
 
-    static void receiveData(void* data);
-
-    virtual void    connectPads(FFPad* sourcePad, FFPad* sinkPad);
 
     void addPad(FFPad* pad);
     void _start();
+
 private:
 
     pthread_t pid_start;
@@ -38,4 +37,4 @@ private:
     AVCodecContext *codecContext = 0;
 };
 
-#endif //FFMEDIAPLAYER_DECODEELEMENT_H
+#endif //FFMEDIAPLAYER_DECODEAUDIOELEMENT_H

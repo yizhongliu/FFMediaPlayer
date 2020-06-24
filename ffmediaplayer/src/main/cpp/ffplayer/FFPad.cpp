@@ -28,3 +28,12 @@ void FFPad::setRecivieData(bool flag) {
     receiveData = flag;
 }
 
+FFPad::FFPad() {
+
+}
+
+FFPad::FFPad(pad_type padType, pad_media_type mediaType) {
+    this->padType = padType;
+    this->mediaType = mediaType;
+}
+

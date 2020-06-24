@@ -140,6 +140,7 @@ void RenderVideoElement::_start() {
 
         AVFrame* frame = (AVFrame *) videoPad->getData();
         if (frame == 0) {
+    //        ALOGE("RenderVideoElement::_start()  frame is 0");
             av_usleep(10 * 1000);
             continue;
         }
@@ -177,7 +178,7 @@ void RenderVideoElement::renderFrame(uint8_t *src_data, int src_lineSize, int wi
         pthread_mutex_unlock(&mutex);
         return;
     }
-    ALOGE("RenderVideoElement width:%d, height:%d", width,height);
+//    ALOGE("RenderVideoElement width:%d, height:%d", width,height);
     ANativeWindow_setBuffersGeometry(window, width,
                                      height,
                                      WINDOW_FORMAT_RGBA_8888);

@@ -1,9 +1,9 @@
 //
-// Created by llm on 20-5-16.
+// Created by llm on 20-6-20.
 //
 
-#ifndef FFMEDIAPLAYER_DECODEVIDEOSINKPAD_H
-#define FFMEDIAPLAYER_DECODEVIDEOSINKPAD_H
+#ifndef FFMEDIAPLAYER_DECODEAUDIOSINKPAD_H
+#define FFMEDIAPLAYER_DECODEAUDIOSINKPAD_H
 
 #include "FFPad.h"
 #include "safe_queue.h"
@@ -13,10 +13,10 @@ extern "C" {
 };
 
 
-class DecodeVideoSinkPad: public FFPad {
+class DecodeAudioSinkPad: public FFPad {
 public:
-    DecodeVideoSinkPad();
-    virtual ~DecodeVideoSinkPad();
+    DecodeAudioSinkPad();
+    virtual ~DecodeAudioSinkPad();
     virtual void addData(void* frame);
     virtual void* getData();
     virtual bool isDataBufferEmpty();
@@ -25,4 +25,4 @@ private:
     SafeQueue<AVPacket *> packets;
 };
 
-#endif //FFMEDIAPLAYER_DECODEVIDEOSINKPAD_H
+#endif //FFMEDIAPLAYER_DECODEAUDIOSINKPAD_H
