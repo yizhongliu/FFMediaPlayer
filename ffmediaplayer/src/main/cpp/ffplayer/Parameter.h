@@ -13,12 +13,15 @@ extern "C" {
 
 typedef struct {
     AVFormatContext* formatContext;
-    AVCodecContext *audioCodecContext;
-    AVCodecContext *videoCodecContext;
+    AVCodecContext *audioCodecContext;  //音频解码上下文
+    AVCodecContext *videoCodecContext;  //视频解码上下文
 
-    int videoIndex;
-    int audioIndex;
+    int videoIndex; //视频流的id
+    int audioIndex; //音频流的id
+
+    double streamTime; //时间基准
 
 } PLAYER_PARAMETERS;
+
 
 #endif //FFMEDIAPLAYER_PARAMETER_H

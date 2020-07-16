@@ -53,7 +53,7 @@ private:
 
     pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-    PLAYER_PARAMETERS avContext;
+    PLAYER_PARAMETERS* avContext;
 
     SwrContext *swrContext = 0;
 

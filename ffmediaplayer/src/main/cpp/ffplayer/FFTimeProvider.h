@@ -1,0 +1,12 @@
+//
+// Created by llm on 20-6-24.
+//
+
+#ifndef FFMEDIAPLAYER_FFTIMEPROVIDER_H
+#define FFMEDIAPLAYER_FFTIMEPROVIDER_H
+
+class FFTimeProvider {
+
+};
+
+#endif //FFMEDIAPLAYER_FFTIMEPROVIDER_H
