@@ -125,8 +125,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void preparePlayer(SurfaceHolder holder) {
-      //  File file = new File(getExternalFilesDir(null), "test.mp4");
-        File file = new File(Environment.getExternalStorageDirectory() + File.separator + "test.mp4");
+        File file = new File(getExternalFilesDir(null), "test.mp4");
+     //   File file = new File(Environment.getExternalStorageDirectory() + File.separator + "test.mp4");
         String path = file.getAbsolutePath();
 
 

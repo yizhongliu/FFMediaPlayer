@@ -46,7 +46,7 @@ RenderAudioElement::~RenderAudioElement() {
 
 int RenderAudioElement::open(PLAYER_PARAMETERS &avContext, notify_callback_f notifyFunc) {
 
-    this->avContext  = avContext;
+    this->avContext  = &avContext;
     if (avContext.audioIndex == -1) {
         return INVALID_OPERATION;
     }
@@ -320,8 +320,11 @@ int RenderAudioElement::getPCM() {
         pcmDataSize = out_samples * outSampleSize * outChannels;
 //        frame->best_effort_timestamp*时间单位
 
-        //获取音频时间 audio_time需要被VideoChannel获取
-        //audio_time = frame->best_effort_timestamp * av_q2d(time_base);
+        //获取音频时间 作为整个播放器的时间基准
+        AVRational timeBase = avContext->formatContext->streams[avContext->audioIndex]->time_base;
+        avContext->streamTime = frame->best_effort_timestamp * av_q2d(timeBase);
+
+        ALOGE("Audio time: %lf", avContext->streamTime);
 
         break;
 

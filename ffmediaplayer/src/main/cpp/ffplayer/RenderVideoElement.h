@@ -40,6 +40,7 @@ public:
 
 private:
     FFPad* videoPad = 0;
+    PLAYER_PARAMETERS* avContext;
 
     pthread_t pid_start;
 

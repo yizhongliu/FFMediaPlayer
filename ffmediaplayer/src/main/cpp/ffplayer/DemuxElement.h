@@ -27,7 +27,7 @@ public:
 
 private:
     char* filePath = 0;
-    PLAYER_PARAMETERS avContext;
+    PLAYER_PARAMETERS* avContext;
 
     FFPad* audioPad = 0;
     FFPad* videoPad = 0;

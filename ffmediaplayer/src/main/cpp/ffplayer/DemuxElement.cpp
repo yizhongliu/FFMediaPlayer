@@ -35,8 +35,9 @@ DemuxElement::~DemuxElement() {
 int DemuxElement::open(PLAYER_PARAMETERS &avContext, notify_callback_f notifyFunc) {
     ALOGI("enter %s", __FUNCTION__);
     mNotify = notifyFunc;
+    this->avContext = &avContext;
 
-    avContext.formatContext = avformat_alloc_context();
+    this->avContext->formatContext = avformat_alloc_context();
 
     //打开一个输入流并解析Header
     //第3个参数是input format. 传0是自动检测
@@ -75,8 +76,6 @@ int DemuxElement::open(PLAYER_PARAMETERS &avContext, notify_callback_f notifyFun
         return FIND_STREAM_FAIL;
     }
 
-    this->avContext = avContext;
-
     elementState = ELEMENT_STATE_STOP;
 
     return STATUS_OK;
@@ -92,7 +91,7 @@ int DemuxElement::start() {
     isPlaying = true;
 
     if (elementState == ELEMENT_STATE_STOP) {
-        int ret = av_seek_frame(avContext.formatContext, -1, 0, AVSEEK_FLAG_BACKWARD);
+        int ret = av_seek_frame(avContext->formatContext, -1, 0, AVSEEK_FLAG_BACKWARD);
     }
 
     if (elementState != ELEMENT_STATE_PAUSE) {
@@ -151,10 +150,10 @@ int DemuxElement::stop() {
     }
 
 
-    if (avContext.formatContext) {
-        avformat_close_input(&avContext.formatContext);
-        avformat_free_context(avContext.formatContext);
-        avContext.formatContext = 0;
+    if (avContext->formatContext) {
+        avformat_close_input(&avContext->formatContext);
+        avformat_free_context(avContext->formatContext);
+        avContext->formatContext = 0;
     }
 
     elementState = ELEMENT_STATE_STOP;
@@ -206,15 +205,15 @@ void DemuxElement::_start() {
         }
         //由使用者进行管理和释放
         AVPacket* packet = av_packet_alloc();
-        int ret = av_read_frame(avContext.formatContext, packet);
+        int ret = av_read_frame(avContext->formatContext, packet);
         if (ret == 0) {
-            if (packet->stream_index == avContext.videoIndex) {
+            if (packet->stream_index == avContext->videoIndex) {
                 if (videoPad != 0 && videoPad->hasObserver()) {
                     videoPad->notify(packet);
                 } else {
                     av_packet_free(&packet);
                 }
-            } else if (packet->stream_index == avContext.audioIndex) {
+            } else if (packet->stream_index == avContext->audioIndex) {
                 if (audioPad != 0 && audioPad->hasObserver()) {
                     audioPad->notify(packet);
                 } else {
