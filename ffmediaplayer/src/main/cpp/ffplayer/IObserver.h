@@ -22,6 +22,9 @@ public:
         }
     }
 
+    /*
+     * source pad 通过该函数往sink pad 传递数据
+     * */
     void notify(void* data) {
         if (mObserver) {
             mObserver->addData(data);

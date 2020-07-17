@@ -7,16 +7,12 @@
 #include "macro.h"
 #include "FFLog.h"
 #include "DemuxElement.h"
-#include "DemuxVideoPad.h"
 #include "DecodeVideoElement.h"
-#include "DecodeVideoSinkPad.h"
-#include "DecodeVideoSourcePad.h"
-#include "RenderVideoPad.h"
-#include "DecodeAudioSinkPad.h"
 #include "SourcePad.h"
 #include "RenderAudioElement.h"
-#include "RenderAudioPad.h"
 #include "DecodeAudioElement.h"
+#include "SinkFramePad.h"
+#include "SinkPacketPad.h"
 
 /**
  * 准备线程pid_prepare真正执行的函数
@@ -92,7 +88,7 @@ int FFplayer::prepare() {
         return ret;
     }
 
-    FFPad* demuxVideoPad = new DemuxVideoPad();
+    FFPad* demuxVideoPad =  new SourcePad(PAD_SOURCE, PAD_VIDEO); //new DemuxVideoPad();
     linkPad(demuxElement, demuxVideoPad);
 
     FFPad* demuxAudioPad = new SourcePad(PAD_SOURCE, PAD_AUDIO);
@@ -105,9 +101,9 @@ int FFplayer::prepare() {
         ALOGE("open decode video element fail");
     }
 
-    FFPad* videoDecodeSinkPad = new DecodeVideoSinkPad();
+    FFPad* videoDecodeSinkPad = new SinkPacketPad(PAD_SINK, PAD_VIDEO); //new DecodeVideoSinkPad();
     linkPad(decodeVideoElement, videoDecodeSinkPad);
-    FFPad* videoDecodeSourcePad = new DecodeVideoSourcePad();
+    FFPad* videoDecodeSourcePad = new SourcePad(PAD_SOURCE, PAD_VIDEO);
     linkPad(decodeVideoElement, videoDecodeSourcePad);
 
 
@@ -120,7 +116,7 @@ int FFplayer::prepare() {
         ALOGE("open decode audio element fail");
     }
 
-    FFPad* audioDecodeSinkPad = new DecodeAudioSinkPad();
+    FFPad* audioDecodeSinkPad = new SinkPacketPad(PAD_SINK, PAD_AUDIO); //new DecodeAudioSinkPad();
     linkPad(decodeAudioElement, audioDecodeSinkPad);
     FFPad* audioDecodeSourcePad = new SourcePad(PAD_SOURCE, PAD_AUDIO);
     linkPad(decodeAudioElement, audioDecodeSourcePad);
@@ -136,7 +132,7 @@ int FFplayer::prepare() {
     }
     renderVideoElement->setSurface(window);
 
-    FFPad* videoRenderPad = new RenderVideoPad();
+    FFPad* videoRenderPad = new SinkFramePad(PAD_SINK, PAD_VIDEO); //new RenderVideoPad();
     linkPad(renderVideoElement, videoRenderPad);
 
 
@@ -148,7 +144,7 @@ int FFplayer::prepare() {
     if (ret != STATUS_OK) {
         return ret;
     }
-    FFPad* audioRenderPad = new RenderAudioPad();
+    FFPad* audioRenderPad = new SinkFramePad(PAD_SINK, PAD_AUDIO); //new RenderAudioPad();
     linkPad(renderAudioElement, audioRenderPad);
 
     connectPad(audioDecodeSourcePad, audioRenderPad);
