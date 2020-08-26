@@ -11,22 +11,22 @@ project 采用 Android MediaPlayer生命周期 + Gstreamer pipeline的思想框�
 
 本来是希望写完一个比较完整的project再公布出来,但在实现过程中发现自己能力有限碰到了不少问题, 如果拖得太久自己又失去了写的动力, 所以就边写边发布,目标也从一个完整的project到先实现一个能够运行的project,后面在一步步完善.
 
-2 如何引用
+# 如何引用
 Step 1. Add the JitPack repository to your build file
-
+```
 allprojects {
 		repositories {
 			...
 			maven { url 'https://jitpack.io' }
 		}
 	}
-  
+```  
 Step 2. Add the dependency
-
+```
 dependencies {
 	        implementation 'com.github.yizhongliu:FFMediaPlayer:v1.0'
 	}
-
+```
 
 3 工程博客介绍
 工程地址:
