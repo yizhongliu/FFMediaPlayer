@@ -28,7 +28,7 @@ dependencies {
 	}
 ```
 
-3 工程博客介绍
+# 工程博客介绍
 工程地址:
 [https://github.com/yizhongliu/FFMediaPlayer](https://github.com/yizhongliu/FFMediaPlayer)
 专题的介绍:
