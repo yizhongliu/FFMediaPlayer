@@ -76,6 +76,13 @@ int DemuxElement::open(PLAYER_PARAMETERS &avContext, notify_callback_f notifyFun
         return FIND_STREAM_FAIL;
     }
 
+    //确定音视频同步时间基准
+    if (avContext.audioIndex != -1) {
+        avContext.timeBaseType = TIME_BASE_AUDIO;
+    } else {
+        avContext.timeBaseType = TIME_BASE_VIDEO;
+    }
+
     elementState = ELEMENT_STATE_STOP;
 
     return STATUS_OK;
@@ -150,11 +157,11 @@ int DemuxElement::stop() {
     }
 
 
-    if (avContext->formatContext) {
-        avformat_close_input(&avContext->formatContext);
-        avformat_free_context(avContext->formatContext);
-        avContext->formatContext = 0;
-    }
+//    if (avContext->formatContext) {
+//        avformat_close_input(&avContext->formatContext);
+//        avformat_free_context(avContext->formatContext);
+//        avContext->formatContext = 0;
+//    }
 
     elementState = ELEMENT_STATE_STOP;
 

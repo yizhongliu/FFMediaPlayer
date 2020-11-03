@@ -11,6 +11,12 @@ extern "C" {
 
 };
 
+typedef enum {
+    TIME_BASE_AUDIO,
+    TIME_BASE_VIDEO,
+    TIME_BASE_OTHER
+} TIME_BASE_TYPE;
+
 typedef struct {
     AVFormatContext* formatContext;
     AVCodecContext *audioCodecContext;  //音频解码上下文
@@ -18,6 +24,8 @@ typedef struct {
 
     int videoIndex; //视频流的id
     int audioIndex; //音频流的id
+
+    TIME_BASE_TYPE timeBaseType;
 
     double streamTime; //时间基准
 

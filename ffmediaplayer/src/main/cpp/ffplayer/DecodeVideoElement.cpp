@@ -145,11 +145,11 @@ int DecodeVideoElement::stop() {
         sinkPad = 0;
     }
 
-    if (codecContext) {
-        avcodec_close(codecContext);
-        avcodec_free_context(&codecContext);
-        codecContext = 0;
-    }
+//    if (codecContext) {
+//        avcodec_close(codecContext);
+//        avcodec_free_context(&codecContext);
+//        codecContext = 0;
+//    }
 
     return 0;
 }

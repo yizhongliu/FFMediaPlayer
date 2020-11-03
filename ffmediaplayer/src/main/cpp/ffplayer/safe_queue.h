@@ -12,6 +12,8 @@
 
 using namespace std;
 
+//g++不支持模板类的分离编译，因此模板的实现最好都些在.h文件中，否则将出现undefined reference to XXXX 的错误
+
 template<typename T>
 class SafeQueue {
     typedef void (*ReleaseCallback)(T *);

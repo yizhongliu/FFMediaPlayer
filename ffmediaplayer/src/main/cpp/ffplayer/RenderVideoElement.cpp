@@ -123,6 +123,7 @@ int RenderVideoElement::reset() {
 }
 
 void RenderVideoElement::addPad(FFPad *pad) {
+    ALOGE("RenderVideoElement::addPad");
     if (pad->getPadMediaType() == PAD_VIDEO) {
         if (videoPad != 0) {
             delete videoPad;
@@ -163,7 +164,7 @@ void RenderVideoElement::_start() {
         sws_scale(sws_ctx, frame->data,
                   frame->linesize, 0, height, dst_data, dst_linesize);
 
-        ALOGE("video gettime %lf", avContext->streamTime);
+ //       ALOGE("video gettime %lf", avContext->streamTime);
 
         //extra_delay = repeat_pict / (2*fps)
         extra_delay = frame->repeat_pict / (2 * fps);
@@ -172,33 +173,34 @@ void RenderVideoElement::_start() {
         //计算视频帧pts
         videoTime = frame->best_effort_timestamp * av_q2d(timeBase);
 
+        if (avContext->timeBaseType == TIME_BASE_VIDEO) {
+            av_usleep(real_delay * 1000000);
+        } else {
+            //音视频同步
+            timeDiff = videoTime - avContext->streamTime;
+            if (timeDiff > 0) {
+                //     LOGE("视频比音频快：%lf", time_diff)
 
-
-        //音视频同步
-        timeDiff = videoTime - avContext->streamTime;
-        if (timeDiff > 0) {
-            //     LOGE("视频比音频快：%lf", time_diff)
-
-            if (timeDiff > 1) {
-                //如果相差大于1s,不是直接等待，而是每一帧的播放都放慢一定速度进行播放，即慢慢播等基准时间跟上
-                av_usleep((real_delay * 2) * 1000000);
-            } else {
-                //播放完一帧后（假设播放不耗时），　再取去下一帧，　则下一帧根据帧率是在　real_delay 后进行播放的,　
-                av_usleep((real_delay + timeDiff) * 1000000);
-            }
-        } else if (timeDiff < 0) {
-            //    LOGE("音频比视频快: %lf", fabs(time_diff));
-            //音频比视频快：追音频（尝试丢视频包）
-            //视频包：packets 和 frames
-            if (fabs(timeDiff) >= 0.05) {
-                //时间差如果大于0.05，有明显的延迟感
-                //丢包：要操作队列中数据！一定要小心！
+                if (timeDiff > 1) {
+                    //如果相差大于1s,不是直接等待，而是每一帧的播放都放慢一定速度进行播放，即慢慢播等基准时间跟上
+                    av_usleep((real_delay * 2) * 1000000);
+                } else {
+                    //播放完一帧后（假设播放不耗时），　再取去下一帧，　则下一帧根据帧率是在　real_delay 后进行播放的,　
+                    av_usleep((real_delay + timeDiff) * 1000000);
+                }
+            } else if (timeDiff < 0) {
+                //    LOGE("音频比视频快: %lf", fabs(time_diff));
+                //音频比视频快：追音频（尝试丢视频包）
+                //视频包：packets 和 frames
+                if (fabs(timeDiff) >= 0.05) {
+                    //时间差如果大于0.05，有明显的延迟感
+                    //丢包：要操作队列中数据！一定要小心！
 //                    packets.sync();
-                av_frame_free(&frame);
-                continue;
+                    av_frame_free(&frame);
+                    continue;
+                }
             }
         }
-
 
         renderFrame(dst_data[0], dst_linesize[0], width, height);
 

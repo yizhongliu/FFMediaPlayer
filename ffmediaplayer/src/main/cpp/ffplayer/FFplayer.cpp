@@ -7,16 +7,12 @@
 #include "macro.h"
 #include "FFLog.h"
 #include "DemuxElement.h"
-#include "DemuxVideoPad.h"
 #include "DecodeVideoElement.h"
-#include "DecodeVideoSinkPad.h"
-#include "DecodeVideoSourcePad.h"
-#include "RenderVideoPad.h"
-#include "DecodeAudioSinkPad.h"
 #include "SourcePad.h"
 #include "RenderAudioElement.h"
-#include "RenderAudioPad.h"
 #include "DecodeAudioElement.h"
+#include "SinkFramePad.h"
+#include "SinkPacketPad.h"
 
 /**
  * 准备线程pid_prepare真正执行的函数
@@ -92,72 +88,77 @@ int FFplayer::prepare() {
         return ret;
     }
 
-    FFPad* demuxVideoPad = new DemuxVideoPad();
+    FFPad* demuxVideoPad =  new SourcePad(PAD_SOURCE, PAD_VIDEO); //new DemuxVideoPad();
     linkPad(demuxElement, demuxVideoPad);
 
     FFPad* demuxAudioPad = new SourcePad(PAD_SOURCE, PAD_AUDIO);
     linkPad(demuxElement, demuxAudioPad);
 
-    //创建视频 decode模块
-    FFElement* decodeVideoElement = new DecodeVideoElement();
-    ret = decodeVideoElement->open(avContext, notify);
-    if (ret != STATUS_OK) {
-        ALOGE("open decode video element fail");
-    }
-
-    FFPad* videoDecodeSinkPad = new DecodeVideoSinkPad();
-    linkPad(decodeVideoElement, videoDecodeSinkPad);
-    FFPad* videoDecodeSourcePad = new DecodeVideoSourcePad();
-    linkPad(decodeVideoElement, videoDecodeSourcePad);
-
-
-    connectPad(demuxVideoPad, videoDecodeSinkPad);  //将demux的 输出的pad 链接到 decode输入pad
-
-    //创建音频 decode模块
-    FFElement* decodeAudioElement = new DecodeAudioElement();
-    ret = decodeAudioElement->open(avContext, notify);
-    if (ret != STATUS_OK) {
-        ALOGE("open decode audio element fail");
-    }
-
-    FFPad* audioDecodeSinkPad = new DecodeAudioSinkPad();
-    linkPad(decodeAudioElement, audioDecodeSinkPad);
-    FFPad* audioDecodeSourcePad = new SourcePad(PAD_SOURCE, PAD_AUDIO);
-    linkPad(decodeAudioElement, audioDecodeSourcePad);
-
-    connectPad(demuxAudioPad, audioDecodeSinkPad); //将demux的 输出的pad 链接到 decode输入pad
-
-
-    //创建video render模块
-    FFElement* renderVideoElement = new RenderVideoElement();
-    ret = renderVideoElement->open(avContext, notify);
-    if (ret != STATUS_OK) {
-        return ret;
-    }
-    renderVideoElement->setSurface(window);
-
-    FFPad* videoRenderPad = new RenderVideoPad();
-    linkPad(renderVideoElement, videoRenderPad);
-
-
-    connectPad(videoDecodeSourcePad, videoRenderPad);  //将decode 和 render建立连接
-
-    //创建audio render模块
-    FFElement* renderAudioElement = new RenderAudioElement();
-    ret = renderAudioElement->open(avContext, notify);
-    if (ret != STATUS_OK) {
-        return ret;
-    }
-    FFPad* audioRenderPad = new RenderAudioPad();
-    linkPad(renderAudioElement, audioRenderPad);
-
-    connectPad(audioDecodeSourcePad, audioRenderPad);
-
     elements.push_back(demuxElement);
-    elements.push_back(decodeVideoElement);
-    elements.push_back(decodeAudioElement);
-    elements.push_back(renderVideoElement);
-    elements.push_back(renderAudioElement);
+
+    if (avContext.audioIndex != -1) {
+        //创建音频 decode模块
+        FFElement* decodeAudioElement = new DecodeAudioElement();
+        ret = decodeAudioElement->open(avContext, notify);
+        if (ret != STATUS_OK) {
+            ALOGE("open decode audio element fail");
+        }
+
+        FFPad* audioDecodeSinkPad = new SinkPacketPad(PAD_SINK, PAD_AUDIO); //new DecodeAudioSinkPad();
+        linkPad(decodeAudioElement, audioDecodeSinkPad);
+        FFPad* audioDecodeSourcePad = new SourcePad(PAD_SOURCE, PAD_AUDIO);
+        linkPad(decodeAudioElement, audioDecodeSourcePad);
+
+        connectPad(demuxAudioPad, audioDecodeSinkPad); //将demux的 输出的pad 链接到 decode输入pad
+
+        elements.push_back(decodeAudioElement);
+
+        //创建audio render模块
+        FFElement* renderAudioElement = new RenderAudioElement();
+        ret = renderAudioElement->open(avContext, notify);
+        if (ret != STATUS_OK) {
+            return ret;
+        }
+        FFPad* audioRenderPad = new SinkFramePad(PAD_SINK, PAD_AUDIO); //new RenderAudioPad();
+        linkPad(renderAudioElement, audioRenderPad);
+
+        connectPad(audioDecodeSourcePad, audioRenderPad);
+
+        elements.push_back(renderAudioElement);
+    }
+
+    if (avContext.videoIndex != -1) {
+        //创建视频 decode模块
+        FFElement* decodeVideoElement = new DecodeVideoElement();
+        ret = decodeVideoElement->open(avContext, notify);
+        if (ret != STATUS_OK) {
+            ALOGE("open decode video element fail");
+        }
+
+        FFPad* videoDecodeSinkPad = new SinkPacketPad(PAD_SINK, PAD_VIDEO); //new DecodeVideoSinkPad();
+        linkPad(decodeVideoElement, videoDecodeSinkPad);
+        FFPad* videoDecodeSourcePad = new SourcePad(PAD_SOURCE, PAD_VIDEO);
+        linkPad(decodeVideoElement, videoDecodeSourcePad);
+
+        connectPad(demuxVideoPad, videoDecodeSinkPad);  //将demux的 输出的pad 链接到 decode输入pad
+
+        elements.push_back(decodeVideoElement);
+
+        //创建video render模块
+        FFElement* renderVideoElement = new RenderVideoElement();
+        ret = renderVideoElement->open(avContext, notify);
+        if (ret != STATUS_OK) {
+            return ret;
+        }
+        renderVideoElement->setSurface(window);
+
+        FFPad* videoRenderPad = new SinkFramePad(PAD_SINK, PAD_VIDEO); //new RenderVideoPad();
+        linkPad(renderVideoElement, videoRenderPad);
+
+        connectPad(videoDecodeSourcePad, videoRenderPad);  //将decode 和 render建立连接
+
+        elements.push_back(renderVideoElement);
+    }
 
     elementState = ELEMENT_STATE_OPEN;
 
@@ -206,10 +207,13 @@ int FFplayer::stop() {
         (*it) ->stop();
     }
 
-    for(it = elements.begin(); it != elements.end(); it++) {
+    releasePlayerParameters();
+
+    for(it = elements.begin(); it != elements.end(); ) {
         delete (*it);
         it = elements.erase(it);
     }
+    elements.clear();
 
     elementState = ELEMENT_STATE_STOP;
 
@@ -270,6 +274,29 @@ void FFplayer::initPlayerParameters() {
     avContext.videoIndex = -1;
 }
 
+void FFplayer::releasePlayerParameters() {
+    if (avContext.formatContext) {
+        avformat_close_input(&avContext.formatContext);
+        avformat_free_context(avContext.formatContext);
+        avContext.formatContext = 0;
+    }
+
+    if (avContext.videoCodecContext) {
+        avcodec_close(avContext.videoCodecContext);
+        avcodec_free_context(&avContext.videoCodecContext);
+        avContext.videoCodecContext = 0;
+    }
+
+    if (avContext.audioCodecContext) {
+        avcodec_close(avContext.audioCodecContext);
+        avcodec_free_context(&avContext.audioCodecContext);
+        avContext.audioCodecContext = 0;
+    }
+
+    avContext.audioIndex = -1;
+    avContext.videoIndex = -1;
+}
+
 FFElement *FFplayer::getVidoRender() {
     list<FFElement*>::iterator it;
 
@@ -317,7 +344,9 @@ void FFplayer::_start() {
 
     elementState = ELEMENT_STATE_STOP;
 
-    sendEvent(MEDIA_PLAYBACK_COMPLETE, 0, 0);
+    if (bReachEOF) {
+        sendEvent(MEDIA_PLAYBACK_COMPLETE, 0, 0);
+    }
 }
 
 

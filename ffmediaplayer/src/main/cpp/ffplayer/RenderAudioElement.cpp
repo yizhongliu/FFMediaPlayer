@@ -10,6 +10,8 @@ extern "C" {
 #include <libswresample/swresample.h>
 };
 
+//TODO:以其他时间为基准时的同步实现
+
 void *audio_render_task_start(void *args) {
     ALOGE("enter: %s", __PRETTY_FUNCTION__);
     RenderAudioElement *element = static_cast<RenderAudioElement *>(args);
@@ -18,7 +20,7 @@ void *audio_render_task_start(void *args) {
 }
 
 void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
-    ALOGE("bqPlayerCallback");
+//    ALOGE("bqPlayerCallback");
     RenderAudioElement *element = static_cast<RenderAudioElement *>(context);
     int pcm_size = element->getPCM();
     if (pcm_size > 0) {
@@ -322,9 +324,12 @@ int RenderAudioElement::getPCM() {
 
         //获取音频时间 作为整个播放器的时间基准
         AVRational timeBase = avContext->formatContext->streams[avContext->audioIndex]->time_base;
-        avContext->streamTime = frame->best_effort_timestamp * av_q2d(timeBase);
 
-        ALOGE("Audio time: %lf", avContext->streamTime);
+        if (avContext->timeBaseType == TIME_BASE_AUDIO) {
+            avContext->streamTime = frame->best_effort_timestamp * av_q2d(timeBase);
+        }
+
+   //     ALOGE("Audio time: %lf", avContext->streamTime);
 
         break;
 
