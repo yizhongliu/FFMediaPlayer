@@ -32,6 +32,6 @@ dependencies {
 工程地址:
 [https://github.com/yizhongliu/FFMediaPlayer](https://github.com/yizhongliu/FFMediaPlayer)
 专题的介绍:
-[https://www.jianshu.com/p/e9f8d47242ba](https://www.jianshu.com/p/e9f8d47242ba)
+[https://www.jianshu.com/p/c20cc21e29df](https://www.jianshu.com/p/c20cc21e29df)
 
 
